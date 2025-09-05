@@ -39,6 +39,7 @@
             this.SaveButton = new System.Windows.Forms.Button();
             this.ReadButton = new System.Windows.Forms.Button();
             this.StatusLabel = new System.Windows.Forms.Label();
+            this.deleteCheckBox = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -145,23 +146,35 @@
             this.ReadButton.TabIndex = 8;
             this.ReadButton.Text = "Read";
             this.ReadButton.UseVisualStyleBackColor = true;
+            this.ReadButton.Click += new System.EventHandler(this.ReadButton_Click);
             // 
             // StatusLabel
             // 
             this.StatusLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.StatusLabel.Font = new System.Drawing.Font("Times New Roman", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StatusLabel.Location = new System.Drawing.Point(293, 292);
+            this.StatusLabel.Font = new System.Drawing.Font("Times New Roman", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StatusLabel.Location = new System.Drawing.Point(293, 301);
             this.StatusLabel.Name = "StatusLabel";
             this.StatusLabel.Size = new System.Drawing.Size(253, 55);
             this.StatusLabel.TabIndex = 9;
             this.StatusLabel.Text = "Ready";
             this.StatusLabel.Click += new System.EventHandler(this.label2_Click);
             // 
+            // deleteCheckBox
+            // 
+            this.deleteCheckBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.deleteCheckBox.Location = new System.Drawing.Point(292, 444);
+            this.deleteCheckBox.Name = "deleteCheckBox";
+            this.deleteCheckBox.Size = new System.Drawing.Size(207, 38);
+            this.deleteCheckBox.TabIndex = 10;
+            this.deleteCheckBox.Text = "Delete after storing";
+            this.deleteCheckBox.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(837, 503);
+            this.Controls.Add(this.deleteCheckBox);
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.ReadButton);
             this.Controls.Add(this.SaveButton);
@@ -192,6 +205,7 @@
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.Button ReadButton;
         private System.Windows.Forms.Label StatusLabel;
+        private System.Windows.Forms.CheckBox deleteCheckBox;
     }
 }
 
