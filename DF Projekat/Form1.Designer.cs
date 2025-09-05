@@ -40,6 +40,7 @@
             this.ReadButton = new System.Windows.Forms.Button();
             this.StatusLabel = new System.Windows.Forms.Label();
             this.deleteCheckBox = new System.Windows.Forms.CheckBox();
+            this.deleteButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -152,7 +153,7 @@
             // 
             this.StatusLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.StatusLabel.Font = new System.Drawing.Font("Times New Roman", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StatusLabel.Location = new System.Drawing.Point(293, 301);
+            this.StatusLabel.Location = new System.Drawing.Point(287, 359);
             this.StatusLabel.Name = "StatusLabel";
             this.StatusLabel.Size = new System.Drawing.Size(253, 55);
             this.StatusLabel.TabIndex = 9;
@@ -169,11 +170,23 @@
             this.deleteCheckBox.Text = "Delete after storing";
             this.deleteCheckBox.UseVisualStyleBackColor = true;
             // 
+            // deleteButton
+            // 
+            this.deleteButton.Font = new System.Drawing.Font("Times New Roman", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.deleteButton.Location = new System.Drawing.Point(293, 286);
+            this.deleteButton.Name = "deleteButton";
+            this.deleteButton.Size = new System.Drawing.Size(253, 53);
+            this.deleteButton.TabIndex = 11;
+            this.deleteButton.Text = "Delete";
+            this.deleteButton.UseVisualStyleBackColor = true;
+            this.deleteButton.Click += new System.EventHandler(this.deleteButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(837, 503);
+            this.Controls.Add(this.deleteButton);
             this.Controls.Add(this.deleteCheckBox);
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.ReadButton);
@@ -206,6 +219,7 @@
         private System.Windows.Forms.Button ReadButton;
         private System.Windows.Forms.Label StatusLabel;
         private System.Windows.Forms.CheckBox deleteCheckBox;
+        private System.Windows.Forms.Button deleteButton;
     }
 }
 

@@ -197,7 +197,6 @@ namespace DF_Projekat
             try
             {
                 // Parse the ADS path to get the stream name
-                // Format: "hostfile:streamname"
                 string[] parts = adsPath.Split(':');
                 if (parts.Length < 3) return "unknown_file";
 
@@ -761,5 +760,185 @@ namespace DF_Projekat
                 return -1;
             }
         }
+
+        private void deleteButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Check if OpenRadio is selected (ADS viewing mode)
+                if (!OpenRadio.Checked)
+                {
+                    Console.WriteLine("ERROR: OpenRadio must be selected to delete ADS files!");
+                    MessageBox.Show("Please select 'Open' mode to delete ADS files.");
+                    return;
+                }
+
+                // Check if ListView has a selected item
+                if (listView.SelectedItems.Count == 0)
+                {
+                    Console.WriteLine("ERROR: No ADS file selected in ListView!");
+                    MessageBox.Show("Please select an ADS file to delete.");
+                    return;
+                }
+
+                // Get the selected ADS path from ListView
+                string adsPath = listView.SelectedItems[0].Tag.ToString();
+
+                // Verify this is an ADS path (should contain colons)
+                if (!adsPath.Contains(":") || adsPath.Split(':').Length < 3)
+                {
+                    Console.WriteLine("ERROR: Selected item is not an ADS file!");
+                    MessageBox.Show("Selected item is not an ADS file.");
+                    return;
+                }
+
+                // Get the original filename for confirmation dialog
+                string originalFilename = GetOriginalFilenameFromADS(adsPath);
+
+                // Ask for confirmation before deleting
+                DialogResult confirmResult = MessageBox.Show(
+                    $"Are you sure you want to delete the ADS file:\n\n{originalFilename}\n\nThis action cannot be undone.",
+                    "Confirm ADS File Deletion",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning,
+                    MessageBoxDefaultButton.Button2);
+
+                if (confirmResult != DialogResult.Yes)
+                {
+                    Console.WriteLine("ADS file deletion cancelled by user");
+                    return;
+                }
+
+                Console.WriteLine("Starting ADS file deletion...");
+                Console.WriteLine("ADS path: " + adsPath);
+                Console.WriteLine("Original filename: " + originalFilename);
+
+                // Parse the ADS path to get components
+                string[] parts = adsPath.Split(':');
+                string hostFile = parts[0] + ":" + parts[1]; // Reconstruct path with drive letter
+                string streamName = parts[2];
+
+                // Delete the main ADS stream
+                bool mainDeleted = DeleteADSStream(hostFile, streamName);
+
+                // Delete the filename metadata stream
+                bool metadataDeleted = DeleteADSStream(hostFile, streamName + "_filename");
+
+                if (mainDeleted)
+                {
+                    Console.WriteLine("SUCCESS: ADS file deleted - " + originalFilename);
+                    MessageBox.Show($"ADS file '{originalFilename}' has been successfully deleted.");
+
+                    // Refresh the ListView to show the deletion
+                    ShowADSFiles();
+                }
+                else
+                {
+                    Console.WriteLine("ERROR: Failed to delete main ADS stream");
+                    MessageBox.Show("Failed to delete the ADS file. It may be in use or access was denied.");
+                }
+
+                // Log metadata deletion result
+                if (!metadataDeleted)
+                {
+                    Console.WriteLine("WARNING: Could not delete filename metadata stream");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR in DeleteSelectedADSFile: " + ex.Message);
+                MessageBox.Show("Error deleting ADS file: " + ex.Message);
+            }
+        }
+
+        // Helper function to delete an ADS stream
+        private bool DeleteADSStream(string hostFile, string streamName)
+        {
+            try
+            {
+                string adsPath = hostFile + ":" + streamName;
+                Console.WriteLine("Attempting to delete ADS stream: " + adsPath);
+
+                // Open the ADS stream and truncate it to 0 bytes (effectively deleting it)
+                IntPtr hFile = CreateFile(
+                    adsPath,
+                    GENERIC_WRITE,
+                    0,
+                    IntPtr.Zero,
+                    OPEN_EXISTING,
+                    FILE_ATTRIBUTE_NORMAL,
+                    IntPtr.Zero);
+
+                if (hFile == INVALID_HANDLE_VALUE)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    Console.WriteLine("ERROR: Could not open ADS stream for deletion. Error code: " + error);
+                    return false;
+                }
+
+                try
+                {
+                    // Set file pointer to beginning and set end of file (truncate to 0)
+                    if (SetEndOfFile(hFile))
+                    {
+                        Console.WriteLine("Successfully deleted ADS stream: " + streamName);
+                        return true;
+                    }
+                    else
+                    {
+                        int error = Marshal.GetLastWin32Error();
+                        Console.WriteLine("ERROR: SetEndOfFile failed. Error code: " + error);
+                        return false;
+                    }
+                }
+                finally
+                {
+                    CloseHandle(hFile);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception in DeleteADSStream: " + ex.Message);
+                return false;
+            }
+        }
+
+        // Add this P/Invoke declaration to your existing P/Invoke section
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetEndOfFile(IntPtr hFile);
+        /*
+        // Helper function to get original filename from ADS metadata (if not already present)
+        private string GetOriginalFilenameFromADS(string adsPath)
+        {
+            try
+            {
+                // Parse the ADS path to get the stream name
+                string[] parts = adsPath.Split(':');
+                if (parts.Length < 3) return "unknown_file";
+
+                string hostFile = parts[0] + ":" + parts[1]; // Reconstruct path with drive letter
+                string streamName = parts[2];
+
+                // Try to read filename metadata
+                string metadataAdsPath = hostFile + ":" + streamName + "_filename";
+                byte[] filenameData = ReadDataFromADS(metadataAdsPath);
+
+                if (filenameData != null && filenameData.Length > 0)
+                {
+                    return Encoding.UTF8.GetString(filenameData);
+                }
+                else
+                {
+                    // Fallback to stream name if no metadata
+                    return streamName;
+                }
+            }
+            catch
+            {
+                return "unknown_file";
+            }
+        }
+        */
     }
 }
