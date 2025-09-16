@@ -86,24 +86,6 @@ namespace DF_Projekat
             listView.View = View.List;
             StoreRadio.Checked = true;
         }
-        //Nakon sto je dva puta kliknut file u listView
-        /*
-        private void ListView_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            if(listView.SelectedItems.Count>0)
-            {
-                string filepath = listView.SelectedItems[0].Tag.ToString();
-                try
-                {
-                    System.Diagnostics.Process.Start(filepath);
-                }
-                catch(Exception ex)
-                {
-                    MessageBox.Show("There is an Issue with " + ex.Message.ToString());
-                }
-            }
-        }
-        */
 
         private void ListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -223,27 +205,6 @@ namespace DF_Projekat
             }
         }
 
-        // Optional: Schedule cleanup of temporary files after use
-        private async void ScheduleTempFileCleanup(string tempFilePath)
-        {
-            try
-            {
-                // Wait 30 seconds before attempting cleanup
-                await Task.Delay(30000);
-
-                // Check if file is still in use before deleting
-                if (File.Exists(tempFilePath) && !IsFileLocked(tempFilePath))
-                {
-                    File.Delete(tempFilePath);
-                    Console.WriteLine("Cleaned up temporary file: " + tempFilePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Could not clean up temp file: " + ex.Message);
-            }
-        }
-
         // Helper to check if file is locked/in use
         private bool IsFileLocked(string filePath)
         {
@@ -350,7 +311,7 @@ namespace DF_Projekat
 
         }
 
-        private void SaveButton_Click(object sender, EventArgs e)
+        async private void SaveButton_Click(object sender, EventArgs e)
         {
             // Function to copy selected file to ADS with indexed keys
                 try
@@ -394,6 +355,8 @@ namespace DF_Projekat
                     string originalFileName = Path.GetFileName(selectedPath);
 
                     Console.WriteLine("Starting file copy to ADS...");
+                    StatusLabel.Text = "Starting file copy to ADS...";
+                    await Task.Delay(300);
                     Console.WriteLine("Selected file: " + selectedPath);
                     Console.WriteLine("Original filename: " + originalFileName);
                     Console.WriteLine("Host file: " + hostFile);
@@ -404,6 +367,8 @@ namespace DF_Projekat
                     {
                         File.WriteAllText(hostFile, "");
                         Console.WriteLine("Created host file: " + hostFile);
+                        StatusLabel.Text = "Created host file: " + hostFile;
+                        await Task.Delay(1000);
                     }
 
                     // Find next available indexed key
@@ -431,9 +396,18 @@ namespace DF_Projekat
 
                     Console.WriteLine("File successfully copied to ADS with filename metadata!");
                     Console.WriteLine("SUCCESS: " + originalFileName + " stored with key: " + finalAdsName);
+                
+                StatusLabel.Text = "SUCCESS: " + originalFileName;
+                await Task.Delay(1000);
+                StatusLabel.Text = "Stored with key: " + finalAdsName;
+                await Task.Delay(1000);
+                StatusLabel.Text = fileData.Length + " bytes";
+                await Task.Delay(1000);
+                StatusLabel.Text = "READY";
 
-                    // Delete original file if deleteCheckBox is checked
-                    if (deleteCheckBox.Checked)
+
+                // Delete original file if deleteCheckBox is checked
+                if (deleteCheckBox.Checked)
                     {
                         try
                         {
@@ -761,7 +735,7 @@ namespace DF_Projekat
             }
         }
 
-        private void deleteButton_Click(object sender, EventArgs e)
+        async private void deleteButton_Click(object sender, EventArgs e)
         {
             try
             {
@@ -827,6 +801,9 @@ namespace DF_Projekat
                 if (mainDeleted)
                 {
                     Console.WriteLine("SUCCESS: ADS file deleted - " + originalFilename);
+                    StatusLabel.Text = "Deleted";
+                    await Task.Delay(1000);
+                    StatusLabel.Text = "READY";
                     MessageBox.Show($"ADS file '{originalFilename}' has been successfully deleted.");
 
                     // Refresh the ListView to show the deletion
@@ -907,38 +884,82 @@ namespace DF_Projekat
         // Add this P/Invoke declaration to your existing P/Invoke section
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetEndOfFile(IntPtr hFile);
-        /*
-        // Helper function to get original filename from ADS metadata (if not already present)
-        private string GetOriginalFilenameFromADS(string adsPath)
+
+        private void restoreButton_Click(object sender, EventArgs e)
         {
             try
             {
-                // Parse the ADS path to get the stream name
-                string[] parts = adsPath.Split(':');
-                if (parts.Length < 3) return "unknown_file";
-
-                string hostFile = parts[0] + ":" + parts[1]; // Reconstruct path with drive letter
-                string streamName = parts[2];
-
-                // Try to read filename metadata
-                string metadataAdsPath = hostFile + ":" + streamName + "_filename";
-                byte[] filenameData = ReadDataFromADS(metadataAdsPath);
-
-                if (filenameData != null && filenameData.Length > 0)
+                // Proveri da li je u "Open" modu
+                if (!OpenRadio.Checked)
                 {
-                    return Encoding.UTF8.GetString(filenameData);
+                    MessageBox.Show("Please select 'Open' mode to restore ADS files.");
+                    return;
                 }
-                else
+
+                // Proveri da li je odabran fajl u ListView
+                if (listView.SelectedItems.Count == 0)
                 {
-                    // Fallback to stream name if no metadata
-                    return streamName;
+                    MessageBox.Show("Please select an ADS file to restore.");
+                    return;
+                }
+
+                string adsPath = listView.SelectedItems[0].Tag.ToString();
+
+                // Proveri da li je ovo uopšte ADS path
+                if (!adsPath.Contains(":") || adsPath.Split(':').Length < 3)
+                {
+                    MessageBox.Show("Selected item is not an ADS file.");
+                    return;
+                }
+
+                // Učitaj ADS podatke
+                byte[] adsData = ReadDataFromADS(adsPath);
+                if (adsData == null || adsData.Length == 0)
+                {
+                    MessageBox.Show("Failed to read ADS data or stream is empty!");
+                    return;
+                }
+
+                // Odredi originalni filename iz metadata ADS-a
+                string originalFilename = GetOriginalFilenameFromADS(adsPath);
+                if (string.IsNullOrWhiteSpace(originalFilename))
+                    originalFilename = "restored_file";
+
+                // Odredi folder u kom se nalazi host fajl (root.txt)
+                string[] parts = adsPath.Split(':');
+                string hostFile = parts[0] + ":" + parts[1]; // putanja do root.txt
+                string hostDir = Path.GetDirectoryName(hostFile);
+
+                // Konačna putanja gde će biti vraćen fajl
+                string restorePath = Path.Combine(hostDir, originalFilename);
+
+                // Ako već postoji fajl sa tim imenom, napravi unikatan naziv
+                int counter = 1;
+                string fileNameWithoutExt = Path.GetFileNameWithoutExtension(originalFilename);
+                string extension = Path.GetExtension(originalFilename);
+                while (File.Exists(restorePath))
+                {
+                    restorePath = Path.Combine(hostDir, $"{fileNameWithoutExt}_{counter}{extension}");
+                    counter++;
+                }
+
+                // Zapiši fajl na disk
+                File.WriteAllBytes(restorePath, adsData);
+
+                MessageBox.Show($"File restored successfully:\n{restorePath}");
+                Console.WriteLine("Restored ADS file to: " + restorePath);
+
+                // Opciono: osveži prikaz foldera
+                if (treeView.SelectedNode != null)
+                {
+                    TreeView_AfterSelect(treeView, new TreeViewEventArgs(treeView.SelectedNode, TreeViewAction.Unknown));
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return "unknown_file";
+                MessageBox.Show("Error restoring file: " + ex.Message);
+                Console.WriteLine("Error in restoreButton_Click: " + ex.Message);
             }
         }
-        */
     }
 }

@@ -41,6 +41,7 @@
             this.StatusLabel = new System.Windows.Forms.Label();
             this.deleteCheckBox = new System.Windows.Forms.CheckBox();
             this.deleteButton = new System.Windows.Forms.Button();
+            this.restoreButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -152,10 +153,10 @@
             // StatusLabel
             // 
             this.StatusLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.StatusLabel.Font = new System.Drawing.Font("Times New Roman", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.StatusLabel.Location = new System.Drawing.Point(287, 359);
+            this.StatusLabel.Font = new System.Drawing.Font("Times New Roman", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.StatusLabel.Location = new System.Drawing.Point(319, 21);
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(253, 55);
+            this.StatusLabel.Size = new System.Drawing.Size(506, 39);
             this.StatusLabel.TabIndex = 9;
             this.StatusLabel.Text = "Ready";
             this.StatusLabel.Click += new System.EventHandler(this.label2_Click);
@@ -181,11 +182,23 @@
             this.deleteButton.UseVisualStyleBackColor = true;
             this.deleteButton.Click += new System.EventHandler(this.deleteButton_Click);
             // 
+            // restoreButton
+            // 
+            this.restoreButton.Font = new System.Drawing.Font("Times New Roman", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.restoreButton.Location = new System.Drawing.Point(293, 345);
+            this.restoreButton.Name = "restoreButton";
+            this.restoreButton.Size = new System.Drawing.Size(253, 53);
+            this.restoreButton.TabIndex = 12;
+            this.restoreButton.Text = "Restore";
+            this.restoreButton.UseVisualStyleBackColor = true;
+            this.restoreButton.Click += new System.EventHandler(this.restoreButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(837, 503);
+            this.Controls.Add(this.restoreButton);
             this.Controls.Add(this.deleteButton);
             this.Controls.Add(this.deleteCheckBox);
             this.Controls.Add(this.StatusLabel);
@@ -195,8 +208,9 @@
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.listView);
             this.Controls.Add(this.treeView);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "ADS Explorer";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
@@ -220,6 +234,7 @@
         private System.Windows.Forms.Label StatusLabel;
         private System.Windows.Forms.CheckBox deleteCheckBox;
         private System.Windows.Forms.Button deleteButton;
+        private System.Windows.Forms.Button restoreButton;
     }
 }
 
